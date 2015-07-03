@@ -36,6 +36,7 @@ import com.voxelplugineering.voxelsniper.entity.Player;
 import com.voxelplugineering.voxelsniper.shape.ComplexMaterialShape;
 import com.voxelplugineering.voxelsniper.shape.MaterialShape;
 import com.voxelplugineering.voxelsniper.shape.Shape;
+import com.voxelplugineering.voxelsniper.util.math.Maths;
 import com.voxelplugineering.voxelsniper.world.Block;
 import com.voxelplugineering.voxelsniper.world.Location;
 import com.voxelplugineering.voxelsniper.world.World;
@@ -72,12 +73,16 @@ public class BlendBrush extends AbstractBrush
             player.sendMessage("You must have at least one shape brush before your blend brush.");
             return ExecutionResult.abortExecution();
         }
+        
         Optional<Material> m = args.get(BrushKeys.MATERIAL, Material.class);
         if (!m.isPresent())
         {
             player.sendMessage("You must select a material.");
             return ExecutionResult.abortExecution();
         }
+        
+        //Get structuring element shape. (as opposed to defining it class)
+        
         Optional<Block> l = args.get(BrushKeys.TARGET_BLOCK, Block.class);
         MaterialShape ms = new ComplexMaterialShape(s.get(), m.get());
 
@@ -107,7 +112,9 @@ public class BlendBrush extends AbstractBrush
                             {
                                 if (!(a == 0 && b == 0 && c == 0))
                                 {
-                                    Material mat = world.getBlock(x0 + a, y0 + b, z0 + c).get().getMaterial();
+                                	//TODO: Use world bounds instead of hardcoded magical values from Minecraft.
+                                	int clampedY = Maths.clamp(y0 + b, 0, 255);
+                                    Material mat = world.getBlock(x0 + a, clampedY, z0 + c).get().getMaterial();
                                     if (mats.containsKey(mat))
                                     {
                                         mats.put(mat, mats.get(mat) + 1);
@@ -119,6 +126,8 @@ public class BlendBrush extends AbstractBrush
                             }
                         }
                     }
+                    
+                    
                     int n = 0;
                     Material winner = null;
                     for (Map.Entry<Material, Integer> e : mats.entrySet())
@@ -131,7 +140,6 @@ public class BlendBrush extends AbstractBrush
                     }
 
                     boolean tie = false;
-
                     for (Map.Entry<Material, Integer> e : mats.entrySet())
                     {
                         if (e.getValue() == n && !e.getKey().equals(winner) && !(excludeFluid && e.getKey().isLiquid()))
