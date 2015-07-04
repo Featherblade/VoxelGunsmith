@@ -47,6 +47,7 @@ public final class BrushKeys
     public static final String POINT_A = "pointA";
     public static final String POINT_B = "pointB";
     public static final String SHAPE = "shape";
+    public static final String STRUCTURING_ELEMENT = "structuringElement";
     public static final String TARGET_BLOCK = "targetBlock";
     public static final String TARGET_FACE = "targetFace";
     public static final String YAW = "yaw";

@@ -30,8 +30,9 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.voxelplugineering.voxelsniper.brush.Brush;
 import com.voxelplugineering.voxelsniper.brush.BrushManager;
-import com.voxelplugineering.voxelsniper.brush.effect.BlendBrush;
 import com.voxelplugineering.voxelsniper.brush.effect.MaterialBrush;
+import com.voxelplugineering.voxelsniper.brush.effect.OldBlendBrush;
+import com.voxelplugineering.voxelsniper.brush.effect.morphological.BlendBrush;
 import com.voxelplugineering.voxelsniper.brush.mask.MaterialMaskBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.BallBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.CylinderBrush;
@@ -61,7 +62,8 @@ public final class DefaultBrushBuilder
     /**
      * Loads all the graphs from this utility into the global brush manager.
      * 
-     * @param manager the brush manager to load the brushes into
+     * @param manager
+     *            the brush manager to load the brushes into
      */
     public static void loadAll(BrushManager manager)
     {
@@ -76,7 +78,8 @@ public final class DefaultBrushBuilder
     /**
      * Saves all the brushes from this utility into the given directory.
      * 
-     * @param directory the directory to store the brush files in.
+     * @param directory
+     *            the directory to store the brush files in.
      */
     /*
      * public static void saveAll(File directory) { checkNotNull(directory); if
@@ -114,6 +117,7 @@ public final class DefaultBrushBuilder
         //effect
         GRAPHS.put("material", new MaterialBrush());
         GRAPHS.put("blend", new BlendBrush());
+
     }
 
 }
