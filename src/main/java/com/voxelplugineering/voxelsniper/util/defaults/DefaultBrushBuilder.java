@@ -30,8 +30,8 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.voxelplugineering.voxelsniper.brush.Brush;
 import com.voxelplugineering.voxelsniper.brush.BrushManager;
-import com.voxelplugineering.voxelsniper.brush.effect.BlendBrush;
 import com.voxelplugineering.voxelsniper.brush.effect.MaterialBrush;
+import com.voxelplugineering.voxelsniper.brush.effect.OldBlendBrush;
 import com.voxelplugineering.voxelsniper.brush.mask.MaterialMaskBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.BallBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.CylinderBrush;
@@ -57,7 +57,8 @@ public class DefaultBrushBuilder
     /**
      * Loads all the graphs from this utility into the global brush manager.
      * 
-     * @param manager the brush manager to load the brushes into
+     * @param manager
+     *            the brush manager to load the brushes into
      */
     public static void loadAll(BrushManager manager)
     {
@@ -72,7 +73,8 @@ public class DefaultBrushBuilder
     /**
      * Saves all the brushes from this utility into the given directory.
      * 
-     * @param directory the directory to store the brush files in.
+     * @param directory
+     *            the directory to store the brush files in.
      */
     /*
      * public static void saveAll(File directory) { checkNotNull(directory); if
@@ -94,7 +96,7 @@ public class DefaultBrushBuilder
      */
     public static void buildBrushes()
     {
-        //shape
+        // shape
         graphs.put("ball", new BallBrush());
         graphs.put("cylinder", new CylinderBrush());
         graphs.put("disc", new DiscBrush());
@@ -103,13 +105,13 @@ public class DefaultBrushBuilder
         graphs.put("snipe", new SnipeBrush());
         graphs.put("voxel", new VoxelBrush());
         graphs.put("voxeldisc", new VoxelDiscBrush());
-        
-        //mask
+
+        // mask
         graphs.put("materialmask", new MaterialMaskBrush());
-        
-        //effect
+
+        // effect
         graphs.put("material", new MaterialBrush());
-        graphs.put("blend", new BlendBrush());
+        graphs.put("blend", new OldBlendBrush());
     }
 
 }

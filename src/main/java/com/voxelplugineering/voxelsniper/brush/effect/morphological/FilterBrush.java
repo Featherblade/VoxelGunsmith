@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.voxelplugineering.voxelsniper.brush.effect;
+package com.voxelplugineering.voxelsniper.brush.effect.morphological;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
@@ -31,7 +32,6 @@ import com.voxelplugineering.voxelsniper.brush.AbstractBrush;
 import com.voxelplugineering.voxelsniper.brush.BrushKeys;
 import com.voxelplugineering.voxelsniper.brush.BrushPartType;
 import com.voxelplugineering.voxelsniper.brush.BrushVars;
-import com.voxelplugineering.voxelsniper.brush.ExecutionResult;
 import com.voxelplugineering.voxelsniper.entity.Player;
 import com.voxelplugineering.voxelsniper.shape.ComplexMaterialShape;
 import com.voxelplugineering.voxelsniper.shape.MaterialShape;
@@ -43,45 +43,52 @@ import com.voxelplugineering.voxelsniper.world.World;
 import com.voxelplugineering.voxelsniper.world.material.Material;
 import com.voxelplugineering.voxelsniper.world.queue.ShapeChangeQueue;
 
-/**
- * The blend brush. An effect brush which performs a 'blend' operation by setting blocks in the
- * defined region to the mode material of the surrounding materials.
+/*
+ * An abstract notion of a Morphological hit-or-miss transform with a moving window termed a 'Structuring Element'.
+ * 
+ * This brush takes a shape, structuring element and morphological material operation, and changes the material of
+ * the shape by the operation applied with the structuring element.
+ * 
+ * New operations should therefore be implementations of MorphologicalMaterialOperation, and associated with their
+ * own brush that instantiates this class.
  */
-public class BlendBrush extends AbstractBrush
+public abstract class FilterBrush extends AbstractBrush
 {
+	
+	private FilterOperation operation;
 
-    /**
-     * Creates a new {@link BlendBrush}.
-     */
-    public BlendBrush()
+    public FilterBrush(FilterOperation operation)
     {
-        super("blend", BrushPartType.EFFECT);
+        super(operation.getName(), BrushPartType.EFFECT);
     }
 
     @Override
-    public ExecutionResult run(Player player, BrushVars args)
+    public void run(Player player, BrushVars args)
     {
         boolean excludeFluid = true;
-        if (args.has(BrushKeys.EXCLUDE_FLUID))
-        {
+        if(args.has(BrushKeys.EXCLUDE_FLUID)) {
             excludeFluid = args.get(BrushKeys.EXCLUDE_FLUID, Boolean.class).get();
         }
-
+        
         Optional<Shape> s = args.get(BrushKeys.SHAPE, Shape.class);
         if (!s.isPresent())
         {
-            player.sendMessage("You must have at least one shape brush before your blend brush.");
-            return ExecutionResult.abortExecution();
+            player.sendMessage("You must have at least one shape brush before your" + this.getName() + "brush.");
+            return;
         }
         
         Optional<Material> m = args.get(BrushKeys.MATERIAL, Material.class);
         if (!m.isPresent())
         {
             player.sendMessage("You must select a material.");
-            return ExecutionResult.abortExecution();
+            return;
         }
         
-        //Get structuring element shape. (as opposed to defining it class)
+        Optional<Shape> se = args.get(BrushKeys.STRUCTURING_ELEMENT, Shape.class);
+        if (!se.isPresent())
+        {
+        	player.sendMessage("You must define a structuring element before your" + this.getName() + "brush.");
+        }
         
         Optional<Block> l = args.get(BrushKeys.TARGET_BLOCK, Block.class);
         MaterialShape ms = new ComplexMaterialShape(s.get(), m.get());
@@ -89,7 +96,9 @@ public class BlendBrush extends AbstractBrush
         World world = player.getWorld();
         Location loc = l.get().getLocation();
         Shape shape = s.get();
-
+        Shape structElem = se.get();
+        
+        //Extract the location in the world to x0, y0 and z0.
         for (int x = 0; x < ms.getWidth(); x++)
         {
             int x0 = loc.getFlooredX() + x - shape.getOrigin().getX();
@@ -103,59 +112,43 @@ public class BlendBrush extends AbstractBrush
                     {
                         continue;
                     }
-                    Map<Material, Integer> mats = Maps.newHashMapWithExpectedSize(10);
-                    for (int a = -1; a <= 1; a++)
+                    
+                    for (int a = 0; a < structElem.getWidth(); a++)
                     {
-                        for (int b = -1; b <= 1; b++)
-                        {
-                            for (int c = -1; c <= 1; c++)
-                            {
-                                if (!(a == 0 && b == 0 && c == 0))
-                                {
-                                	//TODO: Use world bounds instead of hardcoded magical values from Minecraft.
-                                	int clampedY = Maths.clamp(y0 + b, 0, 255);
-                                    Material mat = world.getBlock(x0 + a, clampedY, z0 + c).get().getMaterial();
-                                    if (mats.containsKey(mat))
-                                    {
-                                        mats.put(mat, mats.get(mat) + 1);
-                                    } else
-                                    {
-                                        mats.put(mat, 1);
-                                    }
-                                }
-                            }
-                        }
+                    	for (int b = 0; b < structElem.getHeight(); b++)
+                    	{
+                    		for (int c = 0; c < structElem.getLength(); c++)
+                    		{
+                    			
+                    			if (!shape.get(a, b, c, false))
+                    			{
+                    				continue;
+                    			}
+                    			
+                    			a -= structElem.getOrigin().getX();
+                    			b -= structElem.getOrigin().getY();
+                    			c -= structElem.getOrigin().getZ();
+                    			
+                    			if(excludeFluid && world.getBlock(x0 + a, y0 + b, z0 + c).get().getMaterial().isLiquid())
+                    			{
+                    				continue;
+                    			}
+                    			
+                    			//Request visitor to perform check operation on relevant voxel.
+                    			operation.checkPosition(x0, y0, z0, a, b, z, world, world.getBlock(x0 + a, y0 + b, z0 + c).get().getMaterial());
+                    		}
+                    	}
                     }
                     
-                    
-                    int n = 0;
-                    Material winner = null;
-                    for (Map.Entry<Material, Integer> e : mats.entrySet())
+                    //Request visitor to decide final material.
+                    if(operation.getResult().isPresent())
                     {
-                        if (e.getValue() > n && !(excludeFluid && e.getKey().isLiquid()))
-                        {
-                            winner = e.getKey();
-                            n = e.getValue();
-                        }
+                    	ms.setMaterial(x, y, z, false, operation.getResult().get());
                     }
-
-                    boolean tie = false;
-                    for (Map.Entry<Material, Integer> e : mats.entrySet())
-                    {
-                        if (e.getValue() == n && !e.getKey().equals(winner) && !(excludeFluid && e.getKey().isLiquid()))
-                        {
-                            tie = true;
-                        }
-                    }
-                    if (!tie)
-                    {
-                        ms.setMaterial(x, y, z, false, winner);
-                    }
+                    operation.reset();
                 }
             }
         }
-
         new ShapeChangeQueue(player, loc, ms).flush();
-        return ExecutionResult.continueExecution();
     }
 }
