@@ -44,7 +44,8 @@ import com.voxelplugineering.voxelsniper.brush.shape.VoxelBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.VoxelDiscBrush;
 
 /**
- * In lieu of having flat file brushes this will temporarily serve as a builder for brushes at runtime for debugging during development.
+ * In lieu of having flat file brushes this will temporarily serve as a builder
+ * for brushes at runtime for debugging during development.
  */
 public final class DefaultBrushBuilder
 {
@@ -101,7 +102,7 @@ public final class DefaultBrushBuilder
      */
     public static void buildBrushes()
     {
-        //shape
+        // shape
         GRAPHS.put("ball", new BallBrush());
         GRAPHS.put("cylinder", new CylinderBrush());
         GRAPHS.put("disc", new DiscBrush());
@@ -111,11 +112,9 @@ public final class DefaultBrushBuilder
         GRAPHS.put("voxel", new VoxelBrush());
         GRAPHS.put("voxeldisc", new VoxelDiscBrush());
 
-        //mask
+        // mask
         GRAPHS.put("materialmask", new MaterialMaskBrush());
 
-        //effect
-        GRAPHS.put("material", new MaterialBrush());
         // effect
         GRAPHS.put("material", new MaterialBrush());
         GRAPHS.put("blend", new OldBlendBrush());

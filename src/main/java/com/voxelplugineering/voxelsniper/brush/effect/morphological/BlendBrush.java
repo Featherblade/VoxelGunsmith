@@ -23,25 +23,22 @@
  */
 package com.voxelplugineering.voxelsniper.brush.effect.morphological;
 
-import com.voxelplugineering.voxelsniper.brush.AbstractBrush;
-import com.voxelplugineering.voxelsniper.brush.BrushPartType;
 import com.voxelplugineering.voxelsniper.brush.BrushVars;
+import com.voxelplugineering.voxelsniper.brush.ExecutionResult;
 import com.voxelplugineering.voxelsniper.entity.Player;
 
 public class BlendBrush extends FilterBrush
 {
-	
-	
 
-	public BlendBrush()
-	{
-		super(new BlendMaterialOperation());
-	}
+    public BlendBrush()
+    {
+        super(new BlendMaterialOperation());
+    }
 
-	@Override
-	public void run(Player player, BrushVars args)
-	{
-		super.run(player, args);
-	}
+    @Override
+    public ExecutionResult run(Player player, BrushVars args)
+    {
+        return super.run(player, args);
+    }
 
 }

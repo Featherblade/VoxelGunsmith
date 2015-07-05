@@ -83,18 +83,18 @@ public class OldBlendBrush extends AbstractBrush
             player.sendMessage("You must select a material.");
             return ExecutionResult.abortExecution();
         }
-        
+
         Optional<String> kernalShape = args.get(BrushKeys.KERNEL, String.class);
         Optional<Double> kernalSize = args.get(BrushKeys.KERNEL_SIZE, Double.class);
         System.out.println("Using strings " + kernalShape.or("empty") + " and " + kernalSize.or(0.0));
         double size = kernalSize.or(1.0);
         String kernelString = kernalShape.or("voxel");
         Optional<Shape> se = PrimativeShapeFactory.createShape(kernelString, size);
-        if(!se.isPresent())
+        if (!se.isPresent())
         {
             se = Optional.<Shape> of(new CuboidShape(3, 3, 3, new Vector3i(1, 1, 1)));
         }
-        
+
         Optional<Block> l = args.get(BrushKeys.TARGET_BLOCK, Block.class);
         MaterialShape ms = new ComplexMaterialShape(s.get(), m.get());
 
@@ -102,7 +102,7 @@ public class OldBlendBrush extends AbstractBrush
         Location loc = l.get().getLocation();
         Shape shape = s.get();
         Shape structElem = se.get();
-        
+
         // Extract the location in the world to x0, y0 and z0.
         for (int x = 0; x < ms.getWidth(); x++)
         {
@@ -150,9 +150,9 @@ public class OldBlendBrush extends AbstractBrush
                                     {
                                         mats.put(mat, 1);
                                     }
-                    			}
-                    		}
-                    	}
+                                }
+                            }
+                        }
                     }
 
                     // Select the material which occured the most.

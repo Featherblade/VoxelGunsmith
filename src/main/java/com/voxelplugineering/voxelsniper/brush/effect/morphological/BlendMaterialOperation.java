@@ -33,27 +33,28 @@ import com.voxelplugineering.voxelsniper.world.material.Material;
 
 public class BlendMaterialOperation implements FilterOperation
 {
-	
-	private Map<Material, Integer> mats;
-	
-	public BlendMaterialOperation()
-	{
-		mats = Maps.newHashMapWithExpectedSize(10);
-	}
 
-	@Override
-	public String getName()
-	{
-		return "blend";
-	}
+    private Map<Material, Integer> mats;
 
-	@Override
-	public boolean checkPosition(int x, int y, int z, int dx, int dy, int dz, World w, Material m)
-	{
-		if(!(dx == 0 && dy == 0 && dz == 0))
-		{
-        	//TODO: Use world bounds instead of hardcoded magical values from Minecraft.
-        	int clampedY = Maths.clamp(y + dy, 0, 255);
+    public BlendMaterialOperation()
+    {
+        mats = Maps.newHashMapWithExpectedSize(10);
+    }
+
+    @Override
+    public String getName()
+    {
+        return "blend";
+    }
+
+    @Override
+    public boolean checkPosition(int x, int y, int z, int dx, int dy, int dz, World w, Material m)
+    {
+        if (!(dx == 0 && dy == 0 && dz == 0))
+        {
+            // TODO: Use world bounds instead of hardcoded magical values from
+            // Minecraft.
+            int clampedY = Maths.clamp(y + dy, 0, 255);
             Material mat = w.getBlock(x + dx, clampedY, z + dz).get().getMaterial();
             if (mats.containsKey(mat))
             {
@@ -62,14 +63,14 @@ public class BlendMaterialOperation implements FilterOperation
             {
                 mats.put(mat, 1);
             }
-		}
-		return false;
-	}
+        }
+        return false;
+    }
 
-	@Override
-	public Optional<Material> getResult()
-	{
-		//Select the material which occurred the most.
+    @Override
+    public Optional<Material> getResult()
+    {
+        // Select the material which occurred the most.
         int n = 0;
         Material winner = null;
         for (Map.Entry<Material, Integer> e : mats.entrySet())
@@ -80,29 +81,30 @@ public class BlendMaterialOperation implements FilterOperation
                 n = e.getValue();
             }
         }
-        
-        //If multiple materials occurred the most, the tie check will become true.
+
+        // If multiple materials occurred the most, the tie check will become
+        // true.
         boolean tie = false;
         for (Map.Entry<Material, Integer> e : mats.entrySet())
         {
-            if(e.getValue() == n && !e.getKey().equals(winner))
+            if (e.getValue() == n && !e.getKey().equals(winner))
             {
                 tie = true;
             }
         }
-        
-        //If a tie is found, no change is made.
-        if(!tie)
+
+        // If a tie is found, no change is made.
+        if (!tie)
         {
             return Optional.of(winner);
         }
-		return Optional.of(null);
-	}
+        return Optional.of(null);
+    }
 
-	@Override
-	public void reset()
-	{
-		Map<Material, Integer> mats = Maps.newHashMapWithExpectedSize(10);
-	}
+    @Override
+    public void reset()
+    {
+        Map<Material, Integer> mats = Maps.newHashMapWithExpectedSize(10);
+    }
 
 }
