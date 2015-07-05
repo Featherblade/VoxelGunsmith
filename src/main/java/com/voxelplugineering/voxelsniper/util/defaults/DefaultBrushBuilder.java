@@ -116,7 +116,6 @@ public final class DefaultBrushBuilder
 
         //effect
         GRAPHS.put("material", new MaterialBrush());
-        GRAPHS.put("blend", new BlendBrush());
         // effect
         GRAPHS.put("material", new MaterialBrush());
         GRAPHS.put("blend", new OldBlendBrush());

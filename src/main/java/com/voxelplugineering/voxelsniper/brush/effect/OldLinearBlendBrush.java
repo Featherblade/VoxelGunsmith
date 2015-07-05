@@ -23,7 +23,6 @@
  */
 package com.voxelplugineering.voxelsniper.brush.effect;
 
-import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
@@ -38,7 +37,6 @@ import com.voxelplugineering.voxelsniper.shape.ComplexMaterialShape;
 import com.voxelplugineering.voxelsniper.shape.MaterialShape;
 import com.voxelplugineering.voxelsniper.shape.Shape;
 import com.voxelplugineering.voxelsniper.shape.csg.CuboidShape;
-import com.voxelplugineering.voxelsniper.shape.csg.EllipsoidShape;
 import com.voxelplugineering.voxelsniper.shape.csg.PrimativeShapeFactory;
 import com.voxelplugineering.voxelsniper.util.math.Maths;
 import com.voxelplugineering.voxelsniper.util.math.Vector3i;
@@ -96,7 +94,6 @@ public class OldLinearBlendBrush extends AbstractBrush
         Location loc = l.get().getLocation();
         Shape shape = s.get();
         Shape structElem = se.get();
-        
         double maxX = Math.max(structElem.getWidth() - structElem.getOrigin().getX() - 1, structElem.getOrigin().getX());
         double maxY = Math.max(structElem.getHeight() - structElem.getOrigin().getY() - 1, structElem.getOrigin().getY());
         double maxZ = Math.max(structElem.getLength() - structElem.getOrigin().getZ() - 1, structElem.getOrigin().getZ());

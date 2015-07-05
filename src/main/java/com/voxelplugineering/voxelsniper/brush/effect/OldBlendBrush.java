@@ -37,7 +37,6 @@ import com.voxelplugineering.voxelsniper.shape.ComplexMaterialShape;
 import com.voxelplugineering.voxelsniper.shape.MaterialShape;
 import com.voxelplugineering.voxelsniper.shape.Shape;
 import com.voxelplugineering.voxelsniper.shape.csg.CuboidShape;
-import com.voxelplugineering.voxelsniper.shape.csg.EllipsoidShape;
 import com.voxelplugineering.voxelsniper.shape.csg.PrimativeShapeFactory;
 import com.voxelplugineering.voxelsniper.util.math.Maths;
 import com.voxelplugineering.voxelsniper.util.math.Vector3i;
@@ -103,7 +102,7 @@ public class OldBlendBrush extends AbstractBrush
         Location loc = l.get().getLocation();
         Shape shape = s.get();
         Shape structElem = se.get();
-
+        
         // Extract the location in the world to x0, y0 and z0.
         for (int x = 0; x < ms.getWidth(); x++)
         {
@@ -151,9 +150,9 @@ public class OldBlendBrush extends AbstractBrush
                                     {
                                         mats.put(mat, 1);
                                     }
-                                }
-                            }
-                        }
+                    			}
+                    		}
+                    	}
                     }
 
                     // Select the material which occured the most.

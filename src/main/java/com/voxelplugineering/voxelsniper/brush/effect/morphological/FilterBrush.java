@@ -23,11 +23,7 @@
  */
 package com.voxelplugineering.voxelsniper.brush.effect.morphological;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 import com.voxelplugineering.voxelsniper.brush.AbstractBrush;
 import com.voxelplugineering.voxelsniper.brush.BrushKeys;
 import com.voxelplugineering.voxelsniper.brush.BrushPartType;
@@ -39,7 +35,6 @@ import com.voxelplugineering.voxelsniper.shape.MaterialShape;
 import com.voxelplugineering.voxelsniper.shape.Shape;
 import com.voxelplugineering.voxelsniper.shape.csg.CuboidShape;
 import com.voxelplugineering.voxelsniper.shape.csg.PrimativeShapeFactory;
-import com.voxelplugineering.voxelsniper.util.math.Maths;
 import com.voxelplugineering.voxelsniper.util.math.Vector3i;
 import com.voxelplugineering.voxelsniper.world.Block;
 import com.voxelplugineering.voxelsniper.world.Location;
@@ -81,7 +76,6 @@ public class FilterBrush extends AbstractBrush
             player.sendMessage("You must have at least one shape brush before your" + this.getName() + "brush.");
             return ExecutionResult.abortExecution();
         }
-
         Optional<Material> m = args.get(BrushKeys.MATERIAL, Material.class);
         if (!m.isPresent())
         {
@@ -94,7 +88,7 @@ public class FilterBrush extends AbstractBrush
         double size = kernalSize.or(1.0);
         String kernelString = kernalShape.or("voxel");
         Optional<Shape> se = PrimativeShapeFactory.createShape(kernelString, size);
-        if(!se.isPresent())
+        if (!se.isPresent())
         {
             se = Optional.<Shape> of(new CuboidShape(3, 3, 3, new Vector3i(1, 1, 1)));
         }
@@ -121,7 +115,6 @@ public class FilterBrush extends AbstractBrush
                     {
                         continue;
                     }
-
                     for (int a = 0; a < structElem.getWidth(); a++)
                     {
                         for (int b = 0; b < structElem.getHeight(); b++)
