@@ -32,7 +32,7 @@ import com.voxelplugineering.voxelsniper.brush.Brush;
 import com.voxelplugineering.voxelsniper.brush.BrushManager;
 import com.voxelplugineering.voxelsniper.brush.effect.MaterialBrush;
 import com.voxelplugineering.voxelsniper.brush.effect.OldBlendBrush;
-import com.voxelplugineering.voxelsniper.brush.effect.morphological.BlendBrush;
+import com.voxelplugineering.voxelsniper.brush.effect.OldLinearBlendBrush;
 import com.voxelplugineering.voxelsniper.brush.mask.MaterialMaskBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.BallBrush;
 import com.voxelplugineering.voxelsniper.brush.shape.CylinderBrush;
@@ -117,7 +117,10 @@ public final class DefaultBrushBuilder
         //effect
         GRAPHS.put("material", new MaterialBrush());
         GRAPHS.put("blend", new BlendBrush());
-
+        // effect
+        GRAPHS.put("material", new MaterialBrush());
+        GRAPHS.put("blend", new OldBlendBrush());
+        GRAPHS.put("linearblend", new OldLinearBlendBrush());
     }
 
 }

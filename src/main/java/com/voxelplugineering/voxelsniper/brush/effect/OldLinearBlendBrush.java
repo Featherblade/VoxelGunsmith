@@ -32,11 +32,16 @@ import com.voxelplugineering.voxelsniper.brush.AbstractBrush;
 import com.voxelplugineering.voxelsniper.brush.BrushKeys;
 import com.voxelplugineering.voxelsniper.brush.BrushPartType;
 import com.voxelplugineering.voxelsniper.brush.BrushVars;
+import com.voxelplugineering.voxelsniper.brush.ExecutionResult;
 import com.voxelplugineering.voxelsniper.entity.Player;
 import com.voxelplugineering.voxelsniper.shape.ComplexMaterialShape;
 import com.voxelplugineering.voxelsniper.shape.MaterialShape;
 import com.voxelplugineering.voxelsniper.shape.Shape;
+import com.voxelplugineering.voxelsniper.shape.csg.CuboidShape;
+import com.voxelplugineering.voxelsniper.shape.csg.EllipsoidShape;
+import com.voxelplugineering.voxelsniper.shape.csg.PrimativeShapeFactory;
 import com.voxelplugineering.voxelsniper.util.math.Maths;
+import com.voxelplugineering.voxelsniper.util.math.Vector3i;
 import com.voxelplugineering.voxelsniper.world.Block;
 import com.voxelplugineering.voxelsniper.world.Location;
 import com.voxelplugineering.voxelsniper.world.World;
@@ -52,7 +57,7 @@ public class OldLinearBlendBrush extends AbstractBrush
     }
 
     @Override
-    public void run(Player player, BrushVars args)
+    public ExecutionResult run(Player player, BrushVars args)
     {
         boolean excludeFluid = true;
         if (args.has(BrushKeys.EXCLUDE_FLUID))
@@ -64,20 +69,24 @@ public class OldLinearBlendBrush extends AbstractBrush
         if (!s.isPresent())
         {
             player.sendMessage("You must have at least one shape brush before your blend brush.");
-            return;
+            return ExecutionResult.abortExecution();
         }
 
         Optional<Material> m = args.get(BrushKeys.MATERIAL, Material.class);
         if (!m.isPresent())
         {
             player.sendMessage("You must select a material.");
-            return;
+            return ExecutionResult.abortExecution();
         }
 
-        Optional<Shape> se = args.get(BrushKeys.STRUCTURING_ELEMENT, Shape.class);
-        if (!se.isPresent())
+        Optional<String> kernalShape = args.get(BrushKeys.KERNEL, String.class);
+        Optional<Double> kernalSize = args.get(BrushKeys.KERNEL_SIZE, Double.class);
+        double size = kernalSize.or(2.0);
+        String kernelString = kernalShape.or("voxel");
+        Optional<Shape> se = PrimativeShapeFactory.createShape(kernelString, size);
+        if(!se.isPresent())
         {
-            player.sendMessage("You must define a structuring element before your blend brush.");
+            se = Optional.<Shape> of(new CuboidShape(5, 5, 5, new Vector3i(2, 2, 2)));
         }
 
         Optional<Block> l = args.get(BrushKeys.TARGET_BLOCK, Block.class);
@@ -87,6 +96,11 @@ public class OldLinearBlendBrush extends AbstractBrush
         Location loc = l.get().getLocation();
         Shape shape = s.get();
         Shape structElem = se.get();
+        
+        double maxX = Math.max(structElem.getWidth() - structElem.getOrigin().getX() - 1, structElem.getOrigin().getX());
+        double maxY = Math.max(structElem.getHeight() - structElem.getOrigin().getY() - 1, structElem.getOrigin().getY());
+        double maxZ = Math.max(structElem.getLength() - structElem.getOrigin().getZ() - 1, structElem.getOrigin().getZ());
+        double maxDistance = Math.sqrt(maxX * maxX + maxY * maxY + maxZ * maxZ);
 
         // Extract the location in the world to x0, y0 and z0.
         for (int x = 0; x < ms.getWidth(); x++)
@@ -102,12 +116,9 @@ public class OldLinearBlendBrush extends AbstractBrush
                     {
                         continue;
                     }
-
                     // Represents a histogram of material occurrences hit by the
                     // structuring element.
                     Map<Material, Double> mats = Maps.newHashMapWithExpectedSize(10);
-                    int count = 0;
-                    double maxDistance = 0;
 
                     for (int a = 0; a < structElem.getWidth(); a++)
                     {
@@ -115,30 +126,24 @@ public class OldLinearBlendBrush extends AbstractBrush
                         {
                             for (int c = 0; c < structElem.getLength(); c++)
                             {
-                                if (!shape.get(a, b, c, false))
+                                if (!structElem.get(a, b, c, false))
                                 {
                                     continue;
                                 }
-                                a -= structElem.getOrigin().getX();
-                                b -= structElem.getOrigin().getY();
-                                c -= structElem.getOrigin().getZ();
-                                // Discludes the target block from the
-                                // calculation.
-                                if (!(a == 0 && b == 0 && c == 0))
+                                int a0 = a - structElem.getOrigin().getX();
+                                int b0 = b - structElem.getOrigin().getY();
+                                int c0 = c - structElem.getOrigin().getZ();
+                                
+                                // TODO: Use world bounds instead of
+                                // hardcoded magical values from Minecraft.
+                                int clampedY = Maths.clamp(y0 + b0, 0, 255);
+                                Material mat = world.getBlock(x0 + a0, clampedY, z0 + c0).get().getMaterial();
+                                if (mats.containsKey(mat))
                                 {
-                                    // TODO: Use world bounds instead of
-                                    // hardcoded magical values from Minecraft.
-                                    int clampedY = Maths.clamp(y0 + b, 0, 255);
-                                    Material mat = world.getBlock(x0 + a, clampedY, z0 + c).get().getMaterial();
-                                    if (mats.containsKey(mat))
-                                    {
-                                        mats.put(mat, mats.get(mat) + Math.sqrt(a * a + b * b + c * c));
-                                    } else
-                                    {
-                                        mats.put(mat, (double) Math.sqrt(a * a + b * b + c * c));
-                                    }
-                                    count++;
-                                    maxDistance = (Math.sqrt(a * a + b * b + c * c) > maxDistance) ? Math.sqrt(a * a + b * b + c * c) : maxDistance;
+                                    mats.put(mat, mats.get(mat) + maxDistance - Math.sqrt(a0 * a0 + b0 * b0 + c0 * c0));
+                                } else
+                                {
+                                    mats.put(mat, maxDistance - Math.sqrt(a0 * a0 + b0 * b0 + c0 * c0));
                                 }
                             }
                         }
@@ -148,7 +153,8 @@ public class OldLinearBlendBrush extends AbstractBrush
                     Material winner = null;
                     for (Map.Entry<Material, Double> e : mats.entrySet())
                     {
-                        if (count * maxDistance - e.getValue() > n && !(excludeFluid && e.getKey().isLiquid()))
+                        System.out.println(e.getKey().getName() + ": " + e.getValue());
+                        if (e.getValue() > n && !(excludeFluid && e.getKey().isLiquid()))
                         {
                             winner = e.getKey();
                             n = e.getValue();
@@ -175,5 +181,6 @@ public class OldLinearBlendBrush extends AbstractBrush
             }
         }
         new ShapeChangeQueue(player, loc, ms).flush();
+        return ExecutionResult.continueExecution();
     }
 }
